@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>بطاقة النقل المدرسي - 2024-2025</title>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Amiri&display=swap');
+
+    body {
+      font-family: 'Amiri', 'Traditional Arabic', serif;
+      background-color: #f0f0f5;
+      width: 350px;
+      margin: 10px auto;
+      padding: 15px;
+      border: 1px solid #999;
+      border-radius: 10px;
+      background: #ffffff;
+      direction: rtl;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      text-align: center;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .header h1 { font-size: 12px; margin: 0; }
+    .header h2 { font-size: 11px; margin: 0; }
+
+    h3 {
+      text-align: center;
+      font-size: 14px;
+      margin: 10px 0;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+      color: #1a252f;
+    }
+
+    label {
+      display: block;
+      margin: 5px 0 2px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 5px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .form-group { flex: 1; }
+
+    .form-footer {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .stamp-box {
+      width: 100px;
+      height: 50px;
+      border: 2px dashed #999;
+      text-align: center;
+      padding-top: 10px;
+      color: #666;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .submit-button {
+      background-color: #005577;
+      color: white;
+      padding: 5px 10px;
+      font-size: 12px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .submit-button:hover {
+      background-color: #003f5c;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>وزارة التربية الوطنية والتعليم الأولي والرياضة</h1>
+    <h2>الأكاديمية الجهوية للتربية والتكوين: مراكش آسفي</h2>
+    <h2>المديرية الإقليمية: اليوسفية</h2>
+  </div>
+
+  <h3>بطاقة النقل المدرسي<br>للموسم الدراسي: 2024-2025</h3>
+
+  <form id="transportForm" onsubmit="handleSubmit(event)">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="firstName">الاسم:</label>
+        <input type="text" id="firstName" name="firstName" required />
+      </div>
+      <div class="form-group">
+        <label for="lastName">النسب:</label>
+        <input type="text" id="lastName" name="lastName" required />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="massar">رقم مسار:</label>
+        <input type="text" id="massar" name="massar" required pattern="[A-Za-z][0-9]{9}" placeholder="مثال: A123456789" />
+      </div>
+      <div class="form-group">
+        <label for="gender">النوع:</label>
+        <select id="gender" name="gender" required>
+          <option value="">اختر</option>
+          <option value="ذكر">ذكر</option>
+          <option value="أنثى">أنثى</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="school">المؤسسة:</label>
+        <input type="text" id="school" name="school" required />
+      </div>
+      <div class="form-group">
+        <label for="commune">الجماعة:</label>
+        <input type="text" id="commune" name="commune" required />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="level">المستوى الدراسي:</label>
+        <input type="text" id="level" name="level" required />
+      </div>
+      <div class="form-group">
+        <label for="classroom">القسم:</label>
+        <input type="text" id="classroom" name="classroom" required />
+      </div>
+    </div>
+
+    <label for="grant">نوع المنحة:</label>
+    <select id="grant" name="grant" required>
+      <option value="">اختر نوع المنحة</option>
+      <option value="منحة كاملة">منحة كاملة</option>
+      <option value="نصف منحة">نصف منحة</option>
+      <option value="وجبة غذاء">وجبة غذاء</option>
+      <option value="لا شيء">لا شيء</option>
+    </select>
+
+    <label for="phone">رقم هاتف الولي:</label>
+    <input type="text" id="phone" name="phone" required pattern="0[6-7][0-9]{8}" placeholder="مثال: 0612345678" />
+
+    <div class="form-footer">
+      <div class="stamp-box">طابع الإدارة</div>
+      <button type="submit" class="submit-button">إرسال</button>
+    </div>
+  </form>
+
+  <script>
+    // إعداد Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6qKe2C5D1ofL5DjAaQESL2lP4Bgzt3ZY",
+      authDomain: "transportsco-afd6d.firebaseapp.com",
+      projectId: "transportsco-afd6d",
+      storageBucket: "transportsco-afd6d.appspot.com",
+      messagingSenderId: "986347284363",
+      appId: "1:986347284363:web:096defd31e03031ba2318e",
+      measurementId: "G-2G7GQENNDK"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function handleSubmit(event) {
+      event.preventDefault();
+
+      const form = document.getElementById("transportForm");
+      if (!form.checkValidity()) {
+        alert("يرجى تعبئة جميع الحقول بشكل صحيح قبل الإرسال.");
+        form.reportValidity();
+        return;
+      }
+
+      const data = {
+        firstName: document.getElementById("firstName").value.trim(),
+        lastName: document.getElementById("lastName").value.trim(),
+        massar: document.getElementById("massar").value.trim(),
+        gender: document.getElementById("gender").value,
+        school: document.getElementById("school").value.trim(),
+        commune: document.getElementById("commune").value.trim(),
+        level: document.getElementById("level").value.trim(),
+        classroom: document.getElementById("classroom").value.trim(),
+        grant: document.getElementById("grant").value,
+        phone: document.getElementById("phone").value.trim()
+      };
+
+      db.collection("transportData").add(data)
+        .then(() => {
+          alert("تم حفظ البيانات بنجاح!");
+          printCard(data);
+        })
+        .catch((error) => {
+          alert("حدث خطأ أثناء الحفظ: " + error.message);
+        });
+    }
+
+    function printCard(data) {
+      const printWindow = window.open('', '', 'width=800,height=600');
+      printWindow.document.write(`
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="UTF-8" />
+          <title>بطاقة النقل المدرسي</title>
+          <style>
+            body { font-family: 'Amiri', 'Traditional Arabic', serif; direction: rtl; padding: 20px; width: 350px; }
+            h2 { text-align: center; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+            td { padding: 6px; border: 1px solid #ccc; }
+            .stamp { margin-top: 20px; border: 2px dashed #999; width: 100px; height: 50px; text-align: center; padding-top: 15px; color: #666; font-size: 10px; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <h2>وزارة التربية الوطنية والتعليم الأولي والرياضة<br>
+          الأكاديمية الجهوية مراكش آسفي<br>
+          المديرية الإقليمية اليوسفية</h2>
+
+          <h2>بطاقة النقل المدرسي - 2024-2025</h2>
+          <table>
+            <tr><td>الاسم:</td><td>${data.firstName}</td><td>النسب:</td><td>${data.lastName}</td></tr>
+            <tr><td>رقم مسار:</td><td>${data.massar}</td><td>النوع:</td><td>${data.gender}</td></tr>
+            <tr><td>المؤسسة:</td><td>${data.school}</td><td>الجماعة:</td><td>${data.commune}</td></tr>
+            <tr><td>المستوى:</td><td>${data.level}</td><td>القسم:</td><td>${data.classroom}</td></tr>
+            <tr><td>نوع المنحة:</td><td colspan="3">${data.grant}</td></tr>
+            <tr><td>رقم هاتف الولي:</td><td colspan="3">${data.phone}</td></tr>
+          </table>
+
+          <div class="stamp">طابع الإدارة</div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+
+      printWindow.onload = function () {
+        printWindow.focus();
+        printWindow.print();
+      };
+    }
+  </script>
+</body>
+</html>
